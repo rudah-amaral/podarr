@@ -7,10 +7,13 @@ kind: Pod
 metadata:
   annotations:
     bind-mount-options: /data/media:Z
+    io.containers.autoupdate/myjellyfin: registry
+    io.podman.annotations.kube.health.check/podarr-jellyfin: "true"
     io.podman.annotations.kube.health.check/podarr-prowlarr: "true"
     io.podman.annotations.kube.health.check/podarr-radarr: "true"
     io.podman.annotations.kube.health.check/podarr-sonarr: "true"
     io.podman.annotations.userns: keep-id
+    io.podman.annotations.userns/podarr-jellyfin: keep-id
     io.podman.annotations.userns/podarr-prowlarr: keep-id
     io.podman.annotations.userns/podarr-radarr: keep-id
     io.podman.annotations.userns/podarr-sonarr: keep-id
@@ -78,10 +81,37 @@ spec:
       name: data
     - mountPath: /config
       name: radar-config
+  - image: docker.io/jellyfin/jellyfin:latest
+    name: jellyfin
+    ports:
+    - containerPort: 8096
+      hostPort: 8096
+    securityContext:
+      runAsGroup: 992
+      runAsUser: 1000
+    volumeMounts:
+    - mountPath: /media
+      name: media
+      readonly: true
+    - mountPath: /config
+      name: jellyfin-config
+    - mountPath: /cache
+      name: jellyfin-cache-pvc
+    - mountPath: /dev/dri/renderD128
+      name: VA-API
+      readonly: true
   hostUsers: false
   restartPolicy: Always
   volumes:
   # Mount Binds
+  - hostPath:
+      path: /data
+      type: Directory
+    name: data
+  - hostPath:
+      path: /data/media
+      type: Directory
+    name: media
   - hostPath:
       path: /data/config/prowlarr
       type: Directory
@@ -91,14 +121,6 @@ spec:
       type: Directory
     name: bazarr-config
   - hostPath:
-      path: /data/media
-      type: Directory
-    name: media
-  - hostPath:
-      path: /data
-      type: Directory
-    name: data
-  - hostPath:
       path: /data/config/sonarr
       type: Directory
     name: sonarr-config
@@ -106,3 +128,15 @@ spec:
       path: /data/config/radarr
       type: Directory
     name: radar-config
+  - hostPath:
+      path: /data/config/jellyfin
+      type: Directory
+    name: jellyfin-config
+  - hostPath:
+      path: /dev/dri/renderD128
+      type: Directory
+    name: VA-API
+  # Virtual Volumes
+  - name: jellyfin-cache-pvc
+    persistentVolumeClaim:
+      claimName: jellyfin-cache
