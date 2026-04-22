@@ -8,9 +8,11 @@ metadata:
   annotations:
     bind-mount-options: /data/media:Z
     io.podman.annotations.kube.health.check/podarr-prowlarr: "true"
+    io.podman.annotations.kube.health.check/podarr-radarr: "true"
     io.podman.annotations.kube.health.check/podarr-sonarr: "true"
     io.podman.annotations.userns: keep-id
     io.podman.annotations.userns/podarr-prowlarr: keep-id
+    io.podman.annotations.userns/podarr-radarr: keep-id
     io.podman.annotations.userns/podarr-sonarr: keep-id
   creationTimestamp: "2026-04-15T21:47:05Z"
   labels:
@@ -63,6 +65,19 @@ spec:
       name: data
     - mountPath: /config
       name: sonarr-config
+  - image: lscr.io/linuxserver/radarr:latest
+    name: radarr
+    ports:
+    - containerPort: 7878
+      hostPort: 7878
+    securityContext:
+      runAsGroup: 1000
+      runAsUser: 1000
+    volumeMounts:
+    - mountPath: /data
+      name: data
+    - mountPath: /config
+      name: radar-config
   hostUsers: false
   restartPolicy: Always
   volumes:
@@ -87,3 +102,7 @@ spec:
       path: /data/config/sonarr
       type: Directory
     name: sonarr-config
+  - hostPath:
+      path: /data/config/radarr
+      type: Directory
+    name: radar-config
