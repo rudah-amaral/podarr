@@ -11,3 +11,15 @@ metadata:
   labels:
     app: podarr
   name: podarr
+spec:
+  containers:
+  - image: ghcr.io/flaresolverr/flaresolverr:latest
+    name: flaresolverr
+    ports:
+    - containerPort: 8191
+      hostPort: 8191
+    securityContext:
+      runAsGroup: 1000
+      runAsUser: 1000
+  hostUsers: false
+  restartPolicy: Always
