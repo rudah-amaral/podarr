@@ -8,8 +8,10 @@ metadata:
   annotations:
     bind-mount-options: /data/media:Z
     io.podman.annotations.kube.health.check/podarr-prowlarr: "true"
+    io.podman.annotations.kube.health.check/podarr-sonarr: "true"
     io.podman.annotations.userns: keep-id
     io.podman.annotations.userns/podarr-prowlarr: keep-id
+    io.podman.annotations.userns/podarr-sonarr: keep-id
   creationTimestamp: "2026-04-15T21:47:05Z"
   labels:
     app: podarr
@@ -48,6 +50,19 @@ spec:
       name: bazarr-config
     - mountPath: /data/media
       name: media
+  - image: lscr.io/linuxserver/sonarr:latest
+    name: sonarr
+    ports:
+    - containerPort: 8989
+      hostPort: 8989
+    securityContext:
+      runAsGroup: 1000
+      runAsUser: 1000
+    volumeMounts:
+    - mountPath: /data
+      name: data
+    - mountPath: /config
+      name: sonarr-config
   hostUsers: false
   restartPolicy: Always
   volumes:
@@ -64,3 +79,11 @@ spec:
       path: /data/media
       type: Directory
     name: media
+  - hostPath:
+      path: /data
+      type: Directory
+    name: data
+  - hostPath:
+      path: /data/config/sonarr
+      type: Directory
+    name: sonarr-config
