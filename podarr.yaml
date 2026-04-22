@@ -6,6 +6,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   annotations:
+    bind-mount-options: /data/media:Z
     io.podman.annotations.kube.health.check/podarr-prowlarr: "true"
     io.podman.annotations.userns: keep-id
     io.podman.annotations.userns/podarr-prowlarr: keep-id
@@ -34,6 +35,19 @@ spec:
     volumeMounts:
     - mountPath: /config
       name: prowlarr-config
+  - image: lscr.io/linuxserver/bazarr:latest
+    name: bazarr
+    ports:
+    - containerPort: 6767
+      hostPort: 6767
+    securityContext:
+      runAsGroup: 1000
+      runAsUser: 1000
+    volumeMounts:
+    - mountPath: /config
+      name: bazarr-config
+    - mountPath: /data/media
+      name: media
   hostUsers: false
   restartPolicy: Always
   volumes:
@@ -42,3 +56,11 @@ spec:
       path: /data/config/prowlarr
       type: Directory
     name: prowlarr-config
+  - hostPath:
+      path: /data/config/bazarr
+      type: Directory
+    name: bazarr-config
+  - hostPath:
+      path: /data/media
+      type: Directory
+    name: media
